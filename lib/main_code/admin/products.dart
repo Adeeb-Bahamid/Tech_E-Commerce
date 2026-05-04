@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tech_e_commerce/main_code/shared/services/firebase_helper.dart';
 import 'package:tech_e_commerce/main_code/shared/services/images_services.dart';
@@ -16,13 +17,8 @@ class Products extends StatefulWidget {
 class _ProductsState extends State<Products> {
   final ImagesServices _imagesServices = ImagesServices();
   final FirebaseHelper _firebaseHelper = FirebaseHelper();
-  String? imageUrl;
-  List<String> categories = [
-    'All',
-    'Phones',
-    'Laptops',
-    'Tablets'
-  ]; // تحسين التسمية لتبدأ بحرف صغير
+  Map<String, String>? image;
+  List<String> categories = ['All', 'Phones', 'Laptops', 'Tablets'];
   String? selectedCategory = 'All';
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
@@ -67,8 +63,7 @@ class _ProductsState extends State<Products> {
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment
-                      .stretch, // جعل العناصر تمتد للعرض بالكامل
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 30),
 
@@ -111,7 +106,7 @@ class _ProductsState extends State<Products> {
                         ),
                         const SizedBox(width: 15),
                         ElevatedButton.icon(
-                          onPressed: () => _showAddProductDialog(context),
+                          onPressed: () => _showAddProductDialog(context, null),
                           icon: const Icon(Icons.add, size: 18),
                           label: const Text('Add Product'),
                           style: ElevatedButton.styleFrom(
@@ -173,7 +168,8 @@ class _ProductsState extends State<Products> {
                                         final data = doc.data();
                                         return dataRow(
                                           context,
-                                          imageUrl: data['imageUrl'],
+                                          id: data['id'],
+                                          publicId: data['imageId'],
                                           name: data['name'] ?? 'N/A',
                                           category: data['category'] ?? 'N/A',
                                           price: '\$${data['price'] ?? 0}',
@@ -200,10 +196,40 @@ class _ProductsState extends State<Products> {
     );
   }
 
-  Future<void> _showAddProductDialog(BuildContext context) async {
-    List<String> Categories = ['Phones', 'Laptops', 'Tablets'];
+  Future<void> _showAddProductDialog(BuildContext context, String? id,
+      {bool isUpdate = false}) async {
+    List<String> categories = ['Phones', 'Laptops', 'Tablets'];
     final color = Theme.of(context).colorScheme;
-    String? category = 'Phones';
+
+    String? selectedCategory = 'Phones';
+    bool isSelectImage = false;
+
+    if (isUpdate && id != null) {
+      var doc =
+          await FirebaseFirestore.instance.collection('Product').doc(id).get();
+      if (doc.exists) {
+        var data = doc.data() as Map<String, dynamic>;
+        _nameController.text = data['name']?.toString() ?? "";
+        _priceController.text = data['price']?.toString() ?? "";
+        _quantityController.text = data['quantity']?.toString() ?? "";
+        selectedCategory = data['category']?.toString() ?? 'Phones';
+        image = {
+          'secure_url': data['imageUrl'] ?? "",
+          'public_id': data['imageId'] ?? ""
+        };
+        isSelectImage = (image!['secure_url'] as String).isNotEmpty;
+      }
+    } else {
+      _nameController.clear();
+      _priceController.clear();
+      _quantityController.clear();
+      image = null;
+      isSelectImage = false;
+      selectedCategory = 'Phones';
+    }
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       barrierColor: color.onSecondary.withOpacity(0.7),
@@ -214,26 +240,10 @@ class _ProductsState extends State<Products> {
             borderRadius: BorderRadius.circular(20),
             side: const BorderSide(color: Color(0xFF2E3035), width: 1),
           ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Add New Product",
-                style: TextStyle(
-                  color: color.onPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "Enter product details below",
-                style: TextStyle(
-                    color: color.onPrimary.withOpacity(0.5),
-                    fontSize: 13,
-                    fontWeight: FontWeight.normal),
-              ),
-            ],
+          title: Text(
+            isUpdate ? "Update Product" : "Add New Product",
+            style:
+                TextStyle(color: color.onPrimary, fontWeight: FontWeight.bold),
           ),
           content: SizedBox(
             width: 400,
@@ -253,15 +263,13 @@ class _ProductsState extends State<Products> {
                           child: _buildCustomField(
                               controller: _priceController,
                               label: "Price",
-                              icon: Icons.attach_money,
-                              hint: "0.00")),
+                              icon: Icons.attach_money)),
                       const SizedBox(width: 12),
                       Expanded(
                           child: _buildCustomField(
                               controller: _quantityController,
                               label: "Quantity",
-                              icon: Icons.inventory_2_outlined,
-                              hint: "0")),
+                              icon: Icons.inventory_2_outlined)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -269,88 +277,121 @@ class _ProductsState extends State<Products> {
                     children: [
                       Expanded(
                         child: Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
                               color: const Color(0xFF0F1113),
                               borderRadius: BorderRadius.circular(10)),
                           child: DropdownButton<String>(
+                            value: selectedCategory,
                             isExpanded: true,
                             underline: const SizedBox.shrink(),
-                            hint: Text(category.toString()),
-                            items: Categories.map((item) {
+                            items: categories.map((item) {
                               return DropdownMenuItem(
-                                value: item,
-                                child: Text(item),
-                              );
+                                  value: item, child: Text(item));
                             }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                category = value;
-                              });
-                            },
+                            onChanged: (value) =>
+                                setState(() => selectedCategory = value),
                           ),
                         ),
                       ),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              imageUrl = await _imagesServices.uploadImage();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: color.primary.withOpacity(0.3),
-                              foregroundColor: color.onPrimary,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              elevation: 0,
-                            ),
-                            child: const Text('Selected Image')),
-                      )
+                        child: isSelectImage && image != null
+                            ? Stack(
+                                alignment: Alignment.topRight,
+                                children: [
+                                  Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      image: DecorationImage(
+                                        image:
+                                            NetworkImage(image!['secure_url']!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => setState(() {
+                                      isSelectImage = false;
+                                      image = null;
+                                    }),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle),
+                                      child: const Icon(Icons.close,
+                                          size: 16, color: Colors.white),
+                                    ),
+                                  )
+                                ],
+                              )
+                            : ElevatedButton.icon(
+                                icon: const Icon(Icons.image),
+                                label: const Text("Image"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      color.primary.withOpacity(0.1),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 20),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                onPressed: () async {
+                                  var pickedImage =
+                                      await _imagesServices.uploadImage();
+                                  if (pickedImage != null) {
+                                    setState(() {
+                                      image = pickedImage;
+                                      isSelectImage = true;
+                                    });
+                                  }
+                                },
+                              ),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-          actionsPadding: const EdgeInsets.all(20),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Cancel",
-                  style: TextStyle(
-                      color: color.onPrimary.withOpacity(0.5),
-                      fontWeight: FontWeight.w600)),
+              child: const Text("Cancel"),
             ),
-            const SizedBox(width: 8),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color.primary,
-                foregroundColor: color.onPrimary,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-              ),
-              onPressed: () {
+              onPressed: () async {
+                if (image == null || _nameController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content:
+                          Text('Please fill all fields and add an image')));
+                  return;
+                }
+
                 ProductModel product = ProductModel(
+                  id: isUpdate ? id : null,
                   name: _nameController.text,
-                  imageUrl: imageUrl,
-                  category: category!,
-                  price: double.parse(_priceController.text),
-                  quantity: int.parse(_quantityController.text),
+                  imageUrl: image!['secure_url'],
+                  imageId: image!['public_id'],
+                  category: selectedCategory!,
+                  price: double.tryParse(_priceController.text) ?? 0.0,
+                  quantity: int.tryParse(_quantityController.text) ?? 0,
                 );
-                _firebaseHelper.setProduct(
-                    collection: 'Product', product: product.toMap());
-                _nameController.clear();
-                _priceController.clear();
-                _quantityController.clear();
-                Navigator.pop(context);
+
+                if (isUpdate && id != null) {
+                  await _firebaseHelper.updateCollection(
+                      id: id, collection: 'Product', product: product.toMap());
+                } else {
+                  await _firebaseHelper.setCollection(
+                      collection: 'Product', product: product.toMap());
+                }
+
+                if (context.mounted) Navigator.pop(context);
               },
-              child: const Text("Add Product",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(isUpdate ? "Update" : "Add Product"),
             ),
           ],
         );
@@ -402,20 +443,18 @@ class _ProductsState extends State<Products> {
 
   DataRow dataRow(
     BuildContext context, {
+    required String id,
     required String name,
     required String category,
     required String price,
     required String quantity,
-    required String? imageUrl,
+    required String? publicId,
   }) {
     final color = Theme.of(context).colorScheme;
 
     return DataRow(
       cells: [
-        // 1. ID Cell
-        // DataCell(Text(id.toString(), style: TextStyle(color: color.onSurface))),
-
-        // 2. Product (Image + Name) Cell
+        //  Product (Image + Name) Cell
         DataCell(
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -428,8 +467,10 @@ class _ProductsState extends State<Products> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFF2E3035)),
                 ),
-                child: imageUrl != null
-                    ? Image.network(imageUrl, fit: BoxFit.contain)
+                child: publicId != null
+                    ? Image.network(
+                        _imagesServices.image(publicId),
+                      )
                     : const Icon(Icons.image, size: 18, color: Colors.grey),
               ),
               const SizedBox(width: 12),
@@ -440,30 +481,34 @@ class _ProductsState extends State<Products> {
           ),
         ),
 
-        // 3. Category Cell
+        //  Category Cell
         DataCell(Text(category,
             style: TextStyle(color: color.onSurface.withOpacity(0.5)))),
 
-        // 4. Price Cell
+        //  Price Cell
         DataCell(Text(price,
             style: TextStyle(
                 fontWeight: FontWeight.bold, color: color.onSurface))),
 
-        // 5. Quantity Cell
+        //  Quantity Cell
         DataCell(Text(quantity, style: TextStyle(color: color.onSurface))),
 
-        // 6. Actions Cell
+        //  Actions Cell
         DataCell(
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  _showAddProductDialog(context, id, isUpdate: true);
+                },
                 icon: Icon(Icons.edit_outlined,
                     size: 20, color: color.onSurface.withOpacity(0.5)),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  _firebaseHelper.deletedDoc(collection: 'Product', id: id);
+                },
                 icon: Icon(Icons.delete_outline,
                     size: 20, color: color.onSurface.withOpacity(0.5)),
               ),

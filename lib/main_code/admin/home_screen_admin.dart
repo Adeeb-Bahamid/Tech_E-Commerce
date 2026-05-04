@@ -19,7 +19,10 @@ class _HomeScreenAdminState extends State<HomeScreenAdmin> {
       title: 'Products',
       subTitle: 'Manage your store products',
     ),
-    const Orders(),
+    const Orders(
+      title: 'Orders',
+      subTitle: 'subTitle',
+    ),
   ];
   final FirebaseHelper _firebaseHelper = FirebaseHelper();
   int selectedIndex = 0;

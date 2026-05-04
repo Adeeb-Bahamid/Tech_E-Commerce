@@ -14,19 +14,35 @@ class FirebaseHelper {
     return await fireStore.collection(collection).doc(uid).get();
   }
 
-  Future<void> setProduct(
+  Future<DocumentSnapshot<Map<String, dynamic>>> getCollectionDoc(
+      {required String collection, required String id}) async {
+    return await fireStore.collection(collection).doc(id).get();
+  }
+
+  Future<void> setCollection(
       {required String collection,
       required Map<String, dynamic> product}) async {
     await fireStore.collection(collection).doc(product['id']).set(product);
   }
 
+  Future<void> updateCollection(
+      {required String collection,
+      required Map<String, dynamic> product,
+      required String id}) async {
+    await fireStore.collection(collection).doc(id).update(product);
+  }
+
   Query<Map<String, dynamic>> getCollection(
-      {required String collection, String? selectedCategory})  {
+      {required String collection, String? selectedCategory}) {
     if (selectedCategory == 'All' || selectedCategory == null) {
-      return  FirebaseFirestore.instance.collection(collection);
+      return FirebaseFirestore.instance.collection(collection);
     }
-    return  fireStore
+    return fireStore
         .collection(collection)
         .where('category', isEqualTo: selectedCategory);
+  }
+
+  void deletedDoc({required String collection, required String id}) {
+    FirebaseFirestore.instance.collection(collection).doc(id).delete();
   }
 }
