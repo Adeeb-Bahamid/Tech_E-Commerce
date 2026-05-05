@@ -20,6 +20,7 @@ class _ProductsState extends State<Products> {
   Map<String, String>? image;
   List<String> categories = ['All', 'Phones', 'Laptops', 'Tablets'];
   String? selectedCategory = 'All';
+  String searchQuery = "";
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
@@ -67,12 +68,17 @@ class _ProductsState extends State<Products> {
                   children: [
                     const SizedBox(height: 30),
 
-                    // >>> Tool Bar <<<
+                    // >>>>>>>>>>>>>>>>>>>> Tool Bar <<<<<<<<<<<<<<<<<<<<<<<<<<
                     Row(
                       children: [
                         Expanded(
                           flex: 3,
                           child: TextField(
+                            onChanged: (value) {
+                              setState(() {
+                                searchQuery = value.trim().toLowerCase();
+                              });
+                            },
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.search,
                                   color: color.onPrimary.withOpacity(0.5)),
@@ -120,7 +126,7 @@ class _ProductsState extends State<Products> {
                     ),
 
                     const SizedBox(height: 30),
-
+                    // >>>>>>>>>>>>>>>>>>>>>>>>>> Content <<<<<<<<<<<<<<<<<<
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -151,6 +157,18 @@ class _ProductsState extends State<Products> {
                                     }
 
                                     var docs = snapshot.data?.docs ?? [];
+
+                                    if (searchQuery.isNotEmpty) {
+                                      docs = docs.where(
+                                        (doc) {
+                                          final name = doc
+                                              .data()['name']
+                                              .toString()
+                                              .toLowerCase();
+                                          return name.contains(searchQuery);
+                                        },
+                                      ).toList();
+                                    }
 
                                     return DataTable(
                                       columnSpacing:
@@ -383,10 +401,10 @@ class _ProductsState extends State<Products> {
 
                 if (isUpdate && id != null) {
                   await _firebaseHelper.updateCollection(
-                      id: id, collection: 'Product', product: product.toMap());
+                      id: id, collection: 'Product', data: product.toMap());
                 } else {
                   await _firebaseHelper.setCollection(
-                      collection: 'Product', product: product.toMap());
+                      collection: 'Product', data: product.toMap());
                 }
 
                 if (context.mounted) Navigator.pop(context);
@@ -470,6 +488,7 @@ class _ProductsState extends State<Products> {
                 child: publicId != null
                     ? Image.network(
                         _imagesServices.image(publicId),
+                        fit: BoxFit.fill,
                       )
                     : const Icon(Icons.image, size: 18, color: Colors.grey),
               ),

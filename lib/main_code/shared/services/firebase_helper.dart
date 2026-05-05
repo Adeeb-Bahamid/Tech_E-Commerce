@@ -20,16 +20,15 @@ class FirebaseHelper {
   }
 
   Future<void> setCollection(
-      {required String collection,
-      required Map<String, dynamic> product}) async {
-    await fireStore.collection(collection).doc(product['id']).set(product);
+      {required String collection, required Map<String, dynamic> data}) async {
+    await fireStore.collection(collection).doc(data['id']).set(data);
   }
 
   Future<void> updateCollection(
       {required String collection,
-      required Map<String, dynamic> product,
+      required Map<String, dynamic> data,
       required String id}) async {
-    await fireStore.collection(collection).doc(id).update(product);
+    await fireStore.collection(collection).doc(id).update(data);
   }
 
   Query<Map<String, dynamic>> getCollection(

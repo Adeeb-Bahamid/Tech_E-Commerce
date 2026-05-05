@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../shared/services/firebase_helper.dart';
 
 class Orders extends StatefulWidget {
@@ -12,9 +11,9 @@ class Orders extends StatefulWidget {
 }
 
 class _OrdersState extends State<Orders> {
+  final FirebaseHelper _firebaseHelper = FirebaseHelper();
   @override
   Widget build(BuildContext context) {
-    final FirebaseHelper _firebaseHelper = FirebaseHelper();
     ColorScheme color = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +55,7 @@ class _OrdersState extends State<Orders> {
                   children: [
                     const SizedBox(height: 30),
 
-                    //Tabel Data
+                    //>>>>>>>>>>>>>>>>>>>>>>> Tabel Data <<<<<<<<<<<<<<<<<<<<<<<<<<<
                     const SizedBox(height: 30),
                     Container(
                       width: double.infinity,
@@ -101,7 +100,6 @@ class _OrdersState extends State<Orders> {
                                       ],
                                       rows: docs.map((doc) {
                                         final data = doc.data();
-                                        print('${data['Status'] ?? 0}');
                                         return dataRow(
                                           context,
                                           id: doc.id,
@@ -148,25 +146,6 @@ class _OrdersState extends State<Orders> {
 
         // Customer Name
         DataCell(
-          // Row(
-          //   mainAxisSize: MainAxisSize.min,
-          //   children: [
-          //     // Container(
-          //     //   width: 40,
-          //     //   height: 40,
-          //     //   decoration: BoxDecoration(
-          //     //     color: const Color(0xFF0F1113),
-          //     //     borderRadius: BorderRadius.circular(8),
-          //     //     border: Border.all(color: const Color(0xFF2E3035)),
-          //     //   ),
-          //     //   // child: imageUrl != null
-          //     //   //     ? Image.asset(imageUrl, fit: BoxFit.contain)
-          //     //   //     : const Icon(Icons.image, size: 18, color: Colors.grey),
-          //     // ),
-          //     // const SizedBox(width: 12),
-          //   ],
-          // ),
-
           Text(customerName,
               style: TextStyle(
                   fontWeight: FontWeight.w600, color: color.onSurface)),
@@ -209,7 +188,13 @@ class _OrdersState extends State<Orders> {
                             ),
                             const Spacer(),
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                await _firebaseHelper.updateCollection(
+                                    collection: 'orders',
+                                    data: {'Status': 'Accepted'},
+                                    id: id);
+                                setState(() {});
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
                                     color.secondary.withOpacity(0.2),
@@ -229,7 +214,13 @@ class _OrdersState extends State<Orders> {
                             ),
                             const SizedBox(width: 10),
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                await _firebaseHelper.updateCollection(
+                                    collection: 'orders',
+                                    data: {'Status': 'Cancelled'},
+                                    id: id);
+                                setState(() {});
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: color.error.withOpacity(0.2),
                                 foregroundColor: color.error,
@@ -252,36 +243,23 @@ class _OrdersState extends State<Orders> {
                           children: [
                             const Spacer(),
                             Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 5),
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: isAccepted
-                                            ? color.secondary
-                                            : color.error),
-                                    color: isAccepted
-                                        ? color.secondary.withOpacity(0.2)
-                                        : color.error.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(50)),
-                                // child: Row(
-                                //   children: [
-                                // Container(
-                                //   width: 8,
-                                //   height: 8,
-                                //   decoration: const BoxDecoration(
-                                //       color: Colors.amber,
-                                //       shape: BoxShape.circle),
-                                // ),
-                                // const SizedBox(width: 5),
-                                child: isAccepted
-                                    ? Text('Accepted',
-                                        style:
-                                            TextStyle(color: color.secondary))
-                                    : Text('Cancelled',
-                                        style: TextStyle(color: color.error))
-                                //   ],
-                                // ),
-                                ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 5),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: isAccepted
+                                          ? color.secondary
+                                          : color.error),
+                                  color: isAccepted
+                                      ? color.secondary.withOpacity(0.2)
+                                      : color.error.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(50)),
+                              child: isAccepted
+                                  ? Text('Accepted',
+                                      style: TextStyle(color: color.secondary))
+                                  : Text('Cancelled',
+                                      style: TextStyle(color: color.error)),
+                            ),
                           ],
                         ),
                       )
