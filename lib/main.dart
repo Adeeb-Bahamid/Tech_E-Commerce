@@ -1,25 +1,15 @@
-
-
-
-
-
-
-
-
-
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tech_e_commerce/main_code/shared/services/firebase_helper.dart';
 import 'main_code/admin/home_screen_admin.dart';
-import 'main_code/admin/products.dart';
+// import 'main_code/admin/products.dart';
 import 'main_code/shared/theme/app_theme.dart';
 import 'firebase_options.dart';
 // import 'main_code/admin/dashboard.dart';
-import 'main_code/customer/home_screen_customer.dart';
-import 'main_code/screens/login.dart';
+// import 'main_code/customer/home_screen_customer.dart';
+// import 'main_code/screens/login.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
