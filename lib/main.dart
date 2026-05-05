@@ -42,10 +42,10 @@ class AuthGet extends StatefulWidget {
 }
 
 class _AuthGetState extends State<AuthGet> {
-  final FirebaseHelper _firebaseHelper = FirebaseHelper();
+  // final FirebaseHelper _firebaseHelper = FirebaseHelper();
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return const SafeArea(
       child: Scaffold(
         body: HomeScreenAdmin(),
         // body: StreamBuilder<User?>(
