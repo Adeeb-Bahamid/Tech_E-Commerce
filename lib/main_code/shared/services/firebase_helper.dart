@@ -34,7 +34,7 @@ class FirebaseHelper {
   Query<Map<String, dynamic>> getCollection(
       {required String collection, String? selectedCategory}) {
     if (selectedCategory == 'All' || selectedCategory == null) {
-      return FirebaseFirestore.instance.collection(collection);
+      return fireStore.collection(collection);
     }
     return fireStore
         .collection(collection)
@@ -42,6 +42,92 @@ class FirebaseHelper {
   }
 
   void deletedDoc({required String collection, required String id}) {
-    FirebaseFirestore.instance.collection(collection).doc(id).delete();
+    fireStore.collection(collection).doc(id).delete();
+  }
+
+  Future<String> getNextOrderID() async {
+    final docRef = fireStore.collection('counters').doc('orders');
+
+    return fireStore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      int lastId = 0;
+      if (snapshot.exists) {
+        lastId = snapshot['lastId'];
+      }
+      int newId = lastId + 1;
+      transaction.set(docRef, {'lastId': newId});
+      return '#${newId.toString().padLeft(4, '0')}';
+    });
+  }
+
+  Future<void> addToCart({
+    required String userId,
+    required String productId,
+    required String name,
+    required double price,
+    String? imageUrl,
+  }) async {
+    final docRef = FirebaseFirestore.instance.collection('Carts').doc(userId);
+
+    final doc = await docRef.get();
+
+    Map<String, dynamic> items = {};
+
+    if (doc.exists && doc.data()!.containsKey('items')) {
+      items = Map<String, dynamic>.from(doc['items']);
+    }
+
+    if (items.containsKey(productId)) {
+      items[productId]['quantity'] += 1;
+    } else {
+      items[productId] = {
+        "name": name,
+        "price": price,
+        "quantity": 1,
+        "imageUrl": imageUrl,
+      };
+    }
+
+    await docRef.set({
+      "items": items,
+    });
+  }
+
+  //>>>>>>>>>>>>>>>>>>>>> cart functoin <<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  // >>>>>>>>>>>>>>>>>>>>> updata Cart <<<<<<<<<<<<<<<<<<<<<<<
+  Future<void> updateQuantity(
+      String productId, int newQuantity, String userId) async {
+    final docRef = FirebaseFirestore.instance.collection('Carts').doc(userId);
+
+    final doc = await docRef.get();
+
+    if (!doc.exists) return;
+
+    Map<String, dynamic> items = Map<String, dynamic>.from(doc['items']);
+
+    if (!items.containsKey(productId)) return;
+
+    if (newQuantity > 0) {
+      items[productId]['quantity'] = newQuantity;
+    } else {
+      items.remove(productId);
+    }
+
+    await docRef.update({"items": items});
+  }
+
+  // >>>>>>>>>>>>>>>>>>>> removeItem of Cart <<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  Future<void> removeItem(String productId, String userId) async {
+    final docRef = FirebaseFirestore.instance.collection('Carts').doc(userId);
+
+    final doc = await docRef.get();
+
+    if (!doc.exists) return;
+
+    Map<String, dynamic> items = Map<String, dynamic>.from(doc['items']);
+
+    items.remove(productId);
+
+    await docRef.update({"items": items});
   }
 }

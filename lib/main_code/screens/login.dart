@@ -362,52 +362,57 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 32),
 
                         // --- >>>>>>>>>>>>>>>> (Divider) <<<<<<<<<<<<<<<<<<<<<<<< ---
-                        Row(
-                          children: [
-                            const Expanded(
-                                child: Divider(
-                                    color: Colors.white10, thickness: 1)),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text("OR",
-                                  style: TextStyle(
-                                      color: color.onSurface.withOpacity(0.3),
-                                      fontSize: 12)),
-                            ),
-                            const Expanded(
-                                child: Divider(
-                                    color: Colors.white10, thickness: 1)),
-                          ],
-                        ),
+                        kIsWeb
+                            ? const SizedBox.shrink()
+                            : Row(
+                                children: [
+                                  const Expanded(
+                                      child: Divider(
+                                          color: Colors.white10, thickness: 1)),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Text("OR",
+                                        style: TextStyle(
+                                            color: color.onSurface
+                                                .withOpacity(0.3),
+                                            fontSize: 12)),
+                                  ),
+                                  const Expanded(
+                                      child: Divider(
+                                          color: Colors.white10, thickness: 1)),
+                                ],
+                              ),
                         const SizedBox(height: 32),
 
                         // --- >>>>>>>>>>>>>>>>>>>>> (Create Account) <<<<<<<<<<<<<<<<<<<< ---
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                                _isLogin
-                                    ? "Don't have an account?"
-                                    : "Already have an account?",
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.grey)),
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _isLogin = !_isLogin;
-                                });
-                              },
-                              child: Text(
-                                _isLogin ? "Create Account" : "Sign In",
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: color.secondary,
-                                    fontWeight: FontWeight.bold),
+                        kIsWeb
+                            ? const SizedBox.shrink()
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                      _isLogin
+                                          ? "Don't have an account?"
+                                          : "Already have an account?",
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey)),
+                                  InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        _isLogin = !_isLogin;
+                                      });
+                                    },
+                                    child: Text(
+                                      _isLogin ? "Create Account" : "Sign In",
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: color.secondary,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
