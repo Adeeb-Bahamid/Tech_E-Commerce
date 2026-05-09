@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tech_e_commerce/main_code/shared/models/order_model.dart';
 import 'package:tech_e_commerce/main_code/shared/services/firebase_helper.dart';
 
 class CartPage extends StatefulWidget {
@@ -15,9 +16,9 @@ class _CartPageState extends State<CartPage> {
   double subtotal = 0, total = 0;
   double delivery = 15;
 
-  String get userId => FirebaseAuth.instance.currentUser!.uid;
+  User? get user => FirebaseAuth.instance.currentUser;
 
-  double calculatePrices(List<Map<String, dynamic>> cartItems) {
+  void calculatePrices(List<Map<String, dynamic>> cartItems) {
     subtotal = 0;
 
     for (var item in cartItems) {
@@ -26,9 +27,8 @@ class _CartPageState extends State<CartPage> {
       subtotal += price * qty;
     }
 
-    return total = subtotal + delivery;
+    total = subtotal + delivery;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +36,11 @@ class _CartPageState extends State<CartPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        title: Text('My Cart', style: TextStyle(color: color.primary)),
         elevation: 0,
-        title: Text('My Cart',
-            style:
-                TextStyle(color: color.onSurface, fontWeight: FontWeight.bold)),
         centerTitle: true,
+        backgroundColor: color.onPrimary,
+        foregroundColor: color.primary,
       ),
       body: Column(
         children: [
@@ -49,7 +48,7 @@ class _CartPageState extends State<CartPage> {
             child: StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('Carts')
-                  .doc(userId)
+                  .doc(user!.uid)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -57,26 +56,40 @@ class _CartPageState extends State<CartPage> {
                 }
 
                 if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return const Center(child: Text("Cart is empty"));
+                  return const Center(
+                      child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.shopping_cart, size: 50),
+                      Text("Cart is empty"),
+                    ],
+                  ));
                 }
 
                 final data = snapshot.data!.data() as Map<String, dynamic>?;
 
                 if (data == null || !data.containsKey('items')) {
-                  return const Center(child: Text("Cart is empty"));
+                  return const Center(
+                      child: Column(
+                    children: [
+                      Icon(Icons.shopping_cart, size: 50),
+                      Text("Cart is empty"),
+                    ],
+                  ));
                 }
 
                 Map<String, dynamic> items =
                     Map<String, dynamic>.from(data['items']);
 
-                final cartItems = items.entries.map((e) {
+                final List<Map<String, dynamic>> cartItems =
+                    items.entries.map((e) {
                   return {
                     "productId": e.key,
                     ...Map<String, dynamic>.from(e.value),
                   };
                 }).toList();
 
-                total = calculatePrices(cartItems);
+                calculatePrices(cartItems);
 
                 return Column(
                   children: [
@@ -132,7 +145,8 @@ class _CartPageState extends State<CartPage> {
                                           GestureDetector(
                                             onTap: () =>
                                                 _firebaseHelper.removeItem(
-                                                    item['productId'], userId),
+                                                    item['productId'],
+                                                    user!.uid),
                                             child: Icon(Icons.delete_outline,
                                                 color: color.onSurface
                                                     .withOpacity(0.7),
@@ -154,7 +168,7 @@ class _CartPageState extends State<CartPage> {
                                                   .updateQuantity(
                                                       item['productId'],
                                                       qty - 1,
-                                                      userId)),
+                                                      user!.uid)),
                                           Padding(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 15),
@@ -169,7 +183,7 @@ class _CartPageState extends State<CartPage> {
                                                   .updateQuantity(
                                                       item['productId'],
                                                       qty + 1,
-                                                      userId)),
+                                                      user!.uid)),
                                         ],
                                       )
                                     ],
@@ -181,7 +195,7 @@ class _CartPageState extends State<CartPage> {
                         },
                       ),
                     ),
-                    _buildCheckoutSection(subtotal, delivery, total),
+                    _buildCheckoutSection(cartItems),
                   ],
                 );
               },
@@ -207,7 +221,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildCheckoutSection(double subtotal, double delivery, double total) {
+  Widget _buildCheckoutSection(List<Map<String, dynamic>> cartItems) {
     ColorScheme color = Theme.of(context).colorScheme;
     return Card(
       child: Container(
@@ -228,7 +242,24 @@ class _CartPageState extends State<CartPage> {
               width: double.infinity,
               // height: 55,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  final orderId = await _firebaseHelper.getNextOrderID();
+                  final OrderModel orderModel = OrderModel(
+                    id: orderId,
+                    customerName: user!.displayName!,
+                    userId: user!.uid,
+                    cartItems: cartItems,
+                    total: total,
+                    status: 'Pending',
+                    createdAt: FieldValue.serverTimestamp(),
+                  );
+
+                  _firebaseHelper.setCollection(
+                      collection: 'orders', data: orderModel.toMap());
+
+                  _firebaseHelper.deletedDoc(
+                      collection: 'Carts', id: user!.uid);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: color.primary,
                   shape: RoundedRectangleBorder(

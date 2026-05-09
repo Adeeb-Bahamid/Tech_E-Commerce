@@ -24,10 +24,7 @@ class _HomeScreenState extends State<HomeScreenCustomer> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-          child: _pages[_selectedIndex],
-        ),
+        child: _pages[_selectedIndex],
       ),
 
       // >>>>>>>>>>>>>>>>>>>>>>> (Bottom Navigation) <<<<<<<<<<<<<<<<<<<<<<<<<<<

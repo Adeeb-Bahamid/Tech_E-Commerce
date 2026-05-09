@@ -19,144 +19,147 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     ColorScheme color = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/tech_store.png',
-                width: 60,
-                height: 60,
-              ),
-              const Expanded(
-                child: Column(
-                  children: [
-                    ListTile(
-                      title: Text('Hello, User',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold)),
-                      subtitle: Text('Find your favorite products'),
-                    ),
-                  ],
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/tech_store.png',
+                  width: 60,
+                  height: 60,
                 ),
-              ),
-              // IconButton(
-              //     onPressed: () {},
-              //     icon: const CircleAvatar(
-              //         child: Icon(Icons.notifications)))
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Search Bar <<<<<<<<<<<<<<<<<<<<<<<<<
-        TextField(
-          onChanged: (value) {
-            setState(() {
-              searchQuery = value.trim().toLowerCase();
-            });
-          },
-          decoration: InputDecoration(
-            prefixIcon:
-                Icon(Icons.search, color: color.onPrimary.withOpacity(0.5)),
-            hintText: 'Search products...',
-            filled: true,
-            fillColor: color.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide(
-                color: color.primary,
-                width: 1.5,
-              ),
+                const Expanded(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        title: Text('Hello, User',
+                            style: TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.bold)),
+                        subtitle: Text('Find your favorite products'),
+                      ),
+                    ],
+                  ),
+                ),
+                // IconButton(
+                //     onPressed: () {},
+                //     icon: const CircleAvatar(
+                //         child: Icon(Icons.notifications)))
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Filter Bar <<<<<<<<<<<<<<<<<<<<<<<<<
-        SizedBox(
-          height: 50,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _filters.length,
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.only(right: 14),
-              child: FilterChip(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-                showCheckmark: false,
-                side: BorderSide.none,
-                label: Text(_filters[index]),
-                selected: _selectedFilterIndex == index,
-                onSelected: (val) =>
-                    setState(() => _selectedFilterIndex = index),
-                backgroundColor: color.surface,
-                selectedColor: color.primary,
-                labelStyle: TextStyle(
-                  color: _selectedFilterIndex == index
-                      ? color.onPrimary
-                      : color.onPrimary.withOpacity(0.5),
-                ),
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        // >>>>>>>>>>>>>>>>>>>>>>>>>> Data <<<<<<<<<<<<<<<<<<<<<<<<<<
-        Expanded(
-          child: StreamBuilder<QuerySnapshot>(
-            stream: _firebaseHelper
-                .getCollection(
-                    collection: 'Product',
-                    selectedCategory: _filters[_selectedFilterIndex])
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              var docs = snapshot.data!.docs.where((doc) {
-                var name = (doc.data() as Map<String, dynamic>)['name']
-                    .toString()
-                    .toLowerCase();
-                return name.contains(searchQuery.toLowerCase());
-              }).toList();
-              return GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.7,
-                ),
-                itemCount: docs.length,
-                itemBuilder: (context, index) {
-                  var data = docs[index].data() as Map<String, dynamic>;
-
-                  return ProductCard(
-                    productId: docs[index].id,
-                    name: data['name'] ?? 'No Name',
-                    price: '${data['price']}',
-                    imageUrl: '${data['imageUrl']}',
-                  );
-                },
-              );
+          const SizedBox(height: 10),
+          // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Search Bar <<<<<<<<<<<<<<<<<<<<<<<<<
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                searchQuery = value.trim().toLowerCase();
+              });
             },
+            decoration: InputDecoration(
+              prefixIcon:
+                  Icon(Icons.search, color: color.onPrimary.withOpacity(0.5)),
+              hintText: 'Search products...',
+              filled: true,
+              fillColor: color.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide(
+                  color: color.primary,
+                  width: 1.5,
+                ),
+              ),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 10),
+          // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Filter Bar <<<<<<<<<<<<<<<<<<<<<<<<<
+          SizedBox(
+            height: 50,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _filters.length,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(right: 14),
+                child: FilterChip(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30)),
+                  showCheckmark: false,
+                  side: BorderSide.none,
+                  label: Text(_filters[index]),
+                  selected: _selectedFilterIndex == index,
+                  onSelected: (val) =>
+                      setState(() => _selectedFilterIndex = index),
+                  backgroundColor: color.surface,
+                  selectedColor: color.primary,
+                  labelStyle: TextStyle(
+                    color: _selectedFilterIndex == index
+                        ? color.onPrimary
+                        : color.onPrimary.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // >>>>>>>>>>>>>>>>>>>>>>>>>> Data <<<<<<<<<<<<<<<<<<<<<<<<<<
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firebaseHelper
+                  .getCollection(
+                      collection: 'Product',
+                      selectedCategory: _filters[_selectedFilterIndex])
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                var docs = snapshot.data!.docs.where((doc) {
+                  var name = (doc.data() as Map<String, dynamic>)['name']
+                      .toString()
+                      .toLowerCase();
+                  return name.contains(searchQuery.toLowerCase());
+                }).toList();
+                return GridView.builder(
+                  // padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.7,
+                  ),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    var data = docs[index].data() as Map<String, dynamic>;
+
+                    return ProductCard(
+                      productId: docs[index].id,
+                      name: data['name'] ?? 'No Name',
+                      price: '${data['price']}',
+                      imageUrl: '${data['imageUrl']}',
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

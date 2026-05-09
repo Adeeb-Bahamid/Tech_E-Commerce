@@ -56,7 +56,8 @@ class _LoginPageState extends State<LoginPage> {
             .set({
           'username': userCredential.user!.displayName,
           'role': 'customer',
-          'email': userCredential.user!.email
+          'email': userCredential.user!.email,
+          'imageProfile': null
         });
 
         if (mounted) {

@@ -1,14 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseHelper {
   Future<void> signOutWeb() async {
-    // GoogleSignIn googleSignIn = GoogleSignIn();
-    // await googleSignIn.signOut();
+    await FirebaseAuth.instance.signOut();
+  }
+
+  Future<void> signOutApp() async {
+    GoogleSignIn googleSignIn = GoogleSignIn();
+    await googleSignIn.signOut();
     await FirebaseAuth.instance.signOut();
   }
 
   FirebaseFirestore fireStore = FirebaseFirestore.instance;
+
   Future<DocumentSnapshot<Map<String, dynamic>>> getCollectionUser(
       {required String collection, required String uid}) async {
     return await fireStore.collection(collection).doc(uid).get();
@@ -67,7 +73,7 @@ class FirebaseHelper {
     required double price,
     String? imageUrl,
   }) async {
-    final docRef = FirebaseFirestore.instance.collection('Carts').doc(userId);
+    final docRef = fireStore.collection('Carts').doc(userId);
 
     final doc = await docRef.get();
 
@@ -97,7 +103,7 @@ class FirebaseHelper {
   // >>>>>>>>>>>>>>>>>>>>> updata Cart <<<<<<<<<<<<<<<<<<<<<<<
   Future<void> updateQuantity(
       String productId, int newQuantity, String userId) async {
-    final docRef = FirebaseFirestore.instance.collection('Carts').doc(userId);
+    final docRef = fireStore.collection('Carts').doc(userId);
 
     final doc = await docRef.get();
 
@@ -118,7 +124,7 @@ class FirebaseHelper {
 
   // >>>>>>>>>>>>>>>>>>>> removeItem of Cart <<<<<<<<<<<<<<<<<<<<<<<<<<<<
   Future<void> removeItem(String productId, String userId) async {
-    final docRef = FirebaseFirestore.instance.collection('Carts').doc(userId);
+    final docRef = fireStore.collection('Carts').doc(userId);
 
     final doc = await docRef.get();
 
