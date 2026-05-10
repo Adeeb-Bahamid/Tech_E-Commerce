@@ -170,7 +170,7 @@ class _OrdersState extends State<Orders> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 15, vertical: 5),
                               decoration: BoxDecoration(
-                                  color: color.onSecondary,
+                                  color: Colors.amber.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(50)),
                               child: Row(
                                 children: [

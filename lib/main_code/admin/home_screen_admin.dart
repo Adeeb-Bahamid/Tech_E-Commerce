@@ -14,7 +14,10 @@ class HomeScreenAdmin extends StatefulWidget {
 class _HomeScreenAdminState extends State<HomeScreenAdmin> {
   String selectedMenu = 'Dashboard';
   List<Widget> pages = [
-    const Dashboard(),
+    const Dashboard(
+      title: 'Dashboard',
+      subTitle: 'Welcome',
+    ),
     const Products(
       title: 'Products',
       subTitle: 'Manage your store products',
