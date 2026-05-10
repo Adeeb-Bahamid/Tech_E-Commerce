@@ -143,8 +143,8 @@ class _CartPageState extends State<CartPage> {
                                     padding: const EdgeInsets.all(5),
                                     color: color.onSurface.withOpacity(0.4),
                                     child: Image.network(
-                                      _imagesServices.image(item['publicId']) ??
-                                          '',
+                                      _imagesServices.image(item['publicId'])
+                                        ,
                                       width: 80,
                                       height: 80,
                                       fit: BoxFit.fill,

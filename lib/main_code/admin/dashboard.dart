@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../shared/services/firebase_helper.dart';
-
 class Dashboard extends StatefulWidget {
   final String title;
   final String subTitle;
@@ -14,8 +12,6 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   // ================= DYNAMIC DATA =================
-  // لاحقاً تقدر تربطها مع API أو Firebase
-  final FirebaseHelper _firebaseHelper = FirebaseHelper();
   int totalProducts = 0;
   int acceptedOrders = 0;
   int cancelledOrders = 0;
