@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class OrderModel {
@@ -38,25 +37,6 @@ class OrderModel {
       createdAt: formattedDate,
     );
   }
-
-  // factory OrderModel.fromMap(Map<String, dynamic> map, String docId) {
-  //   // تحويل الـ items من Map (كما في الصورة) إلى List لسهولة العرض
-  //   var itemsMap = map['items'] as Map<String, dynamic>? ?? {};
-  //   List<Map<String, dynamic>> itemsList = [];
-
-  //   itemsMap.forEach((key, value) {
-  //     itemsList.add(Map<String, dynamic>.from(value));
-  //   });
-
-  //   return OrderModel(
-  //     id: docId,
-  //     userId: map['userId'] ?? '',
-  //     cartItems: itemsList,
-  //     total: (map['total'] ?? 0).toDouble(),
-  //     status: map['status'] ?? 'Pending',
-  //     createdAt: map['createdAt'] ?? '',
-  //   );
-  // }
 
   Map<String, dynamic> toMap() {
     return {

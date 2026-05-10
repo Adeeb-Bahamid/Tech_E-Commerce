@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tech_e_commerce/main_code/shared/models/order_model.dart';
 import 'package:tech_e_commerce/main_code/shared/services/firebase_helper.dart';
+import 'package:tech_e_commerce/main_code/shared/services/images_services.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -13,6 +14,7 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   final FirebaseHelper _firebaseHelper = FirebaseHelper();
+  final ImagesServices _imagesServices = ImagesServices();
   double subtotal = 0, total = 0;
   double delivery = 15;
 
@@ -28,6 +30,31 @@ class _CartPageState extends State<CartPage> {
     }
 
     total = subtotal + delivery;
+  }
+
+  Future<void> confirmOrder(List<Map<String, dynamic>> cartItems) async {
+    for (var item in cartItems) {
+      final productId = item['productId'];
+      final orderedQty = item['quantity'];
+
+      final productRef =
+          FirebaseFirestore.instance.collection('Product').doc(productId);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(productRef);
+        if (!snapshot.exists) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              backgroundColor: Colors.redAccent, content: Text('Product')));
+        }
+
+        final currentQty = snapshot['quantity'];
+        if (currentQty < orderedQty) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              backgroundColor: Colors.redAccent, content: Text('Product')));
+        }
+        transaction.update(productRef, {'quantity': currentQty - orderedQty});
+      });
+    }
   }
 
   @override
@@ -114,9 +141,10 @@ class _CartPageState extends State<CartPage> {
                                   borderRadius: BorderRadius.circular(15),
                                   child: Container(
                                     padding: const EdgeInsets.all(5),
-                                    color: color.onSecondary,
+                                    color: color.onSurface.withOpacity(0.4),
                                     child: Image.network(
-                                      item['imageUrl'] ?? '',
+                                      _imagesServices.image(item['publicId']) ??
+                                          '',
                                       width: 80,
                                       height: 80,
                                       fit: BoxFit.fill,
@@ -148,7 +176,7 @@ class _CartPageState extends State<CartPage> {
                                                     item['productId'],
                                                     user!.uid),
                                             child: Icon(Icons.delete_outline,
-                                                color: color.onSurface
+                                                color: color.error
                                                     .withOpacity(0.7),
                                                 size: 30),
                                           ),
@@ -213,6 +241,7 @@ class _CartPageState extends State<CartPage> {
       child: Container(
         padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
+          color: icon == Icons.add ? color.secondary : color.error,
           shape: BoxShape.circle,
           border: Border.all(color: Colors.grey.withOpacity(0.5)),
         ),
@@ -257,6 +286,8 @@ class _CartPageState extends State<CartPage> {
                   _firebaseHelper.setCollection(
                       collection: 'orders', data: orderModel.toMap());
 
+                  confirmOrder(cartItems);
+
                   _firebaseHelper.deletedDoc(
                       collection: 'Carts', id: user!.uid);
                 },
@@ -279,17 +310,20 @@ class _CartPageState extends State<CartPage> {
   }
 
   Widget _rowPrice(String label, String value, {bool isTotal = false}) {
+    ColorScheme color = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
             style: TextStyle(
-                color: isTotal ? Colors.white : Colors.grey,
+                color: isTotal
+                    ? color.onSurface
+                    : color.onSurface.withOpacity(0.5),
                 fontSize: isTotal ? 18 : 14,
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
-        Text(value,
+        Text('\$$value',
             style: TextStyle(
-                color: isTotal ? const Color(0xFF7C69FF) : Colors.white,
+                color: isTotal ? color.primary : color.onSurface,
                 fontSize: isTotal ? 20 : 16,
                 fontWeight: FontWeight.bold)),
       ],
@@ -297,225 +331,3 @@ class _CartPageState extends State<CartPage> {
   }
 }
 
-
-
-
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:tech_e_commerce/main_code/shared/services/firebase_helper.dart';
-
-// class CartPage extends StatefulWidget {
-//    CartPage({super.key});
-
-//   @override
-//   State<CartPage> createState() => _CartPageState();
-// }
-
-// class _CartPageState extends State<CartPage> {
-
-
-
-//   final FirebaseHelper _firebaseHelper = FirebaseHelper();
-
-//   // دالة لتحديث الكمية في الفايربيس
-//   Future<void> updateQuantity(String docId, int newQuantity) async {
-//     if (newQuantity > 0) {
-//       await FirebaseFirestore.instance.collection('Carts').doc(docId).update({
-//         'quantity': newQuantity,
-//       });
-//     } else {
-//       // إذا وصلت الكمية لصفر، يمكن حذف المنتج أو تركه حسب رغبتك
-//       await FirebaseFirestore.instance.collection('Carts').doc(docId).delete();
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-
-//     return Scaffold(
-//       // backgroundColor: const Color(0xFF0F0F0F),
-//       appBar: AppBar(
-//         backgroundColor: Colors.transparent,
-//         elevation: 0,
-//         leading: const Icon(Icons.arrow_back_ios, color: Colors.white),
-//         title: const Text('My Cart',
-//             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-//         centerTitle: true,
-//       ),
-//       body: Column(
-//         children: [
-//           // قائمة المنتجات من الفايربيس
-//           Expanded(
-//             child: StreamBuilder<QuerySnapshot>(
-//               stream: _firebaseHelper.getCartItems();
-//                   ,
-//               builder: (context, snapshot) {
-//                 if (!snapshot.hasData) {
-//                   return const Center(child: CircularProgressIndicator());
-//                 }
-
-//                 var docs = snapshot.data!.docs;
-
-//                 return ListView.builder(
-//                   padding: const EdgeInsets.all(20),
-//                   itemCount: docs.length,
-//                   itemBuilder: (context, index) {
-//                     var data = docs[index].data() as Map<String, dynamic>;
-
-//                     print('=====================+++++++++++++++++++++++++++$data++++++++++++++++++++++++++======================================');
-//                     String docId = docs[index].id;
-//                     int qty = data['quantity'] ?? 1;
-
-//                     return Container(
-//                       margin: const EdgeInsets.only(bottom: 20),
-//                       padding: const EdgeInsets.all(15),
-//                       decoration: BoxDecoration(
-//                         color: const Color(0xFF1E1E1E),
-//                         borderRadius: BorderRadius.circular(20),
-//                       ),
-//                       child: Row(
-//                         children: [
-//                           // صورة المنتج
-//                           ClipRRect(
-//                             borderRadius: BorderRadius.circular(15),
-//                             child: Image.network(
-//                               '${data['imageUrl']}',
-//                               width: 80,
-//                               height: 80,
-//                               fit: BoxFit.cover,
-//                             ),
-//                           ),
-//                           const SizedBox(width: 15),
-//                           // تفاصيل المنتج
-//                           Expanded(
-//                             child: Column(
-//                               crossAxisAlignment: CrossAxisAlignment.start,
-//                               children: [
-//                                 Row(
-//                                   mainAxisAlignment:
-//                                       MainAxisAlignment.spaceBetween,
-//                                   children: [
-//                                     Text(data['name'],
-//                                         style: const TextStyle(
-//                                             color: Colors.white,
-//                                             fontWeight: FontWeight.bold,
-//                                             fontSize: 16)),
-//                                     const Icon(Icons.delete_outline,
-//                                         color: Colors.grey, size: 20),
-//                                   ],
-//                                 ),
-//                                 const SizedBox(height: 5),
-//                                 Text("\$${data['price']}",
-//                                     style: const TextStyle(
-//                                         color: Color(0xFF7C69FF),
-//                                         fontWeight: FontWeight.bold)),
-//                                 const SizedBox(height: 10),
-//                                 // أزرار الزيادة والنقصان
-//                                 Row(
-//                                   children: [
-//                                     _qtyBtn(Icons.remove,
-//                                         () => updateQuantity(docId, qty - 1)),
-//                                     Padding(
-//                                       padding: const EdgeInsets.symmetric(
-//                                           horizontal: 15),
-//                                       child: Text("$qty",
-//                                           style: const TextStyle(
-//                                               color: Colors.white,
-//                                               fontSize: 16)),
-//                                     ),
-//                                     _qtyBtn(Icons.add,
-//                                         () => updateQuantity(docId, qty + 1)),
-//                                   ],
-//                                 )
-//                               ],
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     );
-//                   },
-//                 );
-//               },
-//             ),
-//           ),
-
-//           // قسم الحساب النهائي (Footer)
-//           _buildCheckoutSection(),
-//         ],
-//       ),
-//     );
-//   }
-
-//   // ويدجت زر الكمية
-//   Widget _qtyBtn(IconData icon, VoidCallback onTap) {
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Container(
-//         padding: const EdgeInsets.all(5),
-//         decoration: BoxDecoration(
-//           shape: BoxShape.circle,
-//           border: Border.all(color: Colors.grey.withOpacity(0.5)),
-//         ),
-//         child: Icon(icon, color: Colors.white, size: 16),
-//       ),
-//     );
-//   }
-
-//   // قسم الملخص وزر التأكيد
-//   Widget _buildCheckoutSection() {
-//     return Container(
-//       padding: const EdgeInsets.all(25),
-//       decoration: const BoxDecoration(
-//         color: Color(0xFF1E1E1E),
-//         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-//       ),
-//       child: Column(
-//         children: [
-//           _rowPrice("Subtotal", "\$1,548.00"),
-//           const SizedBox(height: 10),
-//           _rowPrice("Delivery Fee", "\$15.00"),
-//           const Divider(color: Colors.grey, height: 30),
-//           _rowPrice("Total", "\$1,563.00", isTotal: true),
-//           const SizedBox(height: 20),
-//           SizedBox(
-//             width: double.infinity,
-//             height: 55,
-//             child: ElevatedButton(
-//               onPressed: () {},
-//               style: ElevatedButton.styleFrom(
-//                 backgroundColor: const Color(0xFF7C69FF),
-//                 shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(15)),
-//               ),
-//               child: const Text("Confirm Order",
-//                   style: TextStyle(
-//                       fontSize: 18,
-//                       fontWeight: FontWeight.bold,
-//                       color: Colors.white)),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _rowPrice(String label, String value, {bool isTotal = false}) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//       children: [
-//         Text(label,
-//             style: TextStyle(
-//                 color: isTotal ? Colors.white : Colors.grey,
-//                 fontSize: isTotal ? 18 : 14,
-//                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
-//         Text(value,
-//             style: TextStyle(
-//                 color: isTotal ? const Color(0xFF7C69FF) : Colors.white,
-//                 fontSize: isTotal ? 20 : 16,
-//                 fontWeight: FontWeight.bold)),
-//       ],
-//     );
-//   }
-// }

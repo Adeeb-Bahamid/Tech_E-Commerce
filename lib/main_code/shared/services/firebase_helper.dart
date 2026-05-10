@@ -71,7 +71,7 @@ class FirebaseHelper {
     required String productId,
     required String name,
     required double price,
-    String? imageUrl,
+    String? publicId,
   }) async {
     final docRef = fireStore.collection('Carts').doc(userId);
 
@@ -90,7 +90,7 @@ class FirebaseHelper {
         "name": name,
         "price": price,
         "quantity": 1,
-        "imageUrl": imageUrl,
+        "publicId": publicId,
       };
     }
 

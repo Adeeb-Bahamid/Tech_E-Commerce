@@ -29,6 +29,7 @@ class _ProductsState extends State<Products> {
   Widget build(BuildContext context) {
     ColorScheme color = Theme.of(context).colorScheme;
     return Scaffold(
+      // backgroundColor: color.surface,
       appBar: AppBar(
         toolbarHeight: 100,
         centerTitle: false,
@@ -42,14 +43,14 @@ class _ProductsState extends State<Products> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: color.onPrimary,
+                  color: color.primary,
                 ),
               ),
               Text(
                 widget.subTitle,
                 style: TextStyle(
                   fontSize: 14,
-                  color: color.onPrimary.withOpacity(0.5),
+                  color: color.primary.withOpacity(0.5),
                 ),
               ),
             ],
@@ -81,7 +82,7 @@ class _ProductsState extends State<Products> {
                             },
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.search,
-                                  color: color.onPrimary.withOpacity(0.5)),
+                                  color: color.onSecondary.withOpacity(0.5)),
                               hintText: 'Search products...',
                               filled: true,
                               fillColor: color.surface,
@@ -174,7 +175,7 @@ class _ProductsState extends State<Products> {
                                       columnSpacing:
                                           (constraints.maxWidth / 10),
                                       headingRowColor: WidgetStateProperty.all(
-                                          color.secondary.withOpacity(0.1)),
+                                          color.primary.withOpacity(0.3)),
                                       columns: const [
                                         DataColumn(label: Text('PRODUCT')),
                                         DataColumn(label: Text('CATEGORY')),
@@ -260,8 +261,8 @@ class _ProductsState extends State<Products> {
           ),
           title: Text(
             isUpdate ? "Update Product" : "Add New Product",
-            style:
-                TextStyle(color: color.onPrimary, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: color.onSecondary, fontWeight: FontWeight.bold),
           ),
           content: SizedBox(
             width: 400,
@@ -297,7 +298,7 @@ class _ProductsState extends State<Products> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                              color: const Color(0xFF0F1113),
+                              color: color.onSecondary.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(10)),
                           child: DropdownButton<String>(
                             value: selectedCategory,
@@ -351,7 +352,9 @@ class _ProductsState extends State<Products> {
                                 label: const Text("Image"),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
-                                      color.primary.withOpacity(0.1),
+                                      color.secondary.withOpacity(0.5),
+                                  foregroundColor:
+                                      color.onSecondary.withOpacity(0.6),
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 20),
                                   shape: RoundedRectangleBorder(
@@ -429,7 +432,7 @@ class _ProductsState extends State<Products> {
       children: [
         Text(label,
             style: TextStyle(
-                color: color.onPrimary.withOpacity(0.7),
+                color: color.onSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
@@ -437,12 +440,11 @@ class _ProductsState extends State<Products> {
           controller: controller,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-                color: color.onPrimary.withOpacity(0.5), fontSize: 14),
+            hintStyle: TextStyle(color: color.onSecondary, fontSize: 14),
             prefixIcon:
-                Icon(icon, color: color.onPrimary.withOpacity(0.7), size: 20),
+                Icon(icon, color: color.onSecondary.withOpacity(0.7), size: 20),
             filled: true,
-            fillColor: const Color(0xFF0F1113),
+            fillColor: color.onSecondary.withOpacity(0.2),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             enabledBorder: OutlineInputBorder(
@@ -481,7 +483,7 @@ class _ProductsState extends State<Products> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F1113),
+                  color: color.onSecondary.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFF2E3035)),
                 ),

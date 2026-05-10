@@ -15,33 +15,18 @@ class OrdersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ColorScheme color = Theme.of(context).colorScheme;
     return Scaffold(
-      // backgroundColor: const Color(0xFFF8FAF8),
-      // appBar: AppBar(
-      //   title: const Text("ShopGreen",
-      //       style: TextStyle(
-      //           color: Color(0xFF1B5E20), fontWeight: FontWeight.bold)),
-      //   centerTitle: true,
-      //   elevation: 0,
-      //   backgroundColor: Colors.transparent,
-      //   leading: const Icon(Icons.menu, color: Color(0xFF1B5E20)),
-      // ),
+      appBar: AppBar(
+        title: Text("My Orders", style: TextStyle(color: color.primary)),
+        centerTitle: true,
+        backgroundColor: color.onPrimary,
+        foregroundColor: color.primary,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: Text(
-                  "My Orders",
-                  style: TextStyle(
-                      color: color.primary,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
@@ -70,84 +55,6 @@ class OrdersPage extends StatelessWidget {
                   );
                 },
               ),
-              // child: StreamBuilder<DocumentSnapshot>(
-              //   stream: FirebaseFirestore.instance
-              //       .collection('orders') // الكولكشن الصحيح
-              //       .doc(currentUserId) // الـ ID الخاص بالمستخدم
-              //       .snapshots(),
-              //   builder: (context, snapshot) {
-              //     if (snapshot.connectionState == ConnectionState.waiting) {
-              //       return const Center(child: CircularProgressIndicator());
-              //     }
-
-              //     if (!snapshot.hasData || !snapshot.data!.exists) {
-              //       return const Center(
-              //           child: Text("لا يوجد طلبات نشطة حالياً"));
-              //     }
-
-              //     final data = snapshot.data!.data() as Map<String, dynamic>;
-              //     final order = OrderModel.fromMap(data);
-
-              //     // عرض الطلب داخل ListView ليناسب شكل الواجهة المطلوبة
-              //     return ListView(
-              //       padding: const EdgeInsets.all(16),
-              //       children: [
-              //         OrderCard(order: order),
-              //       ],
-              //     );
-              //   },
-              // ),
-              // child: StreamBuilder(
-              //   // تأكد من أن اسم الكولكشن 'Carts' ومصفى حسب الـ userId
-              //   stream: FirebaseFirestore.instance
-              //       .collection('Carts')
-              //       .doc(currentUserId)
-              //       .snapshots(),
-              //   builder: (context, snapshot) {
-              //     if (snapshot.connectionState == ConnectionState.waiting) {
-              //       return const Center(child: CircularProgressIndicator());
-              //     }
-
-              //     if (!snapshot.hasData || !snapshot.data!.exists) {
-              //       return const Center(child: Text("لا توجد طلبات حالياً"));
-              //     }
-
-              //     // الحصول على البيانات من الدوكيومنت
-              //     final data = snapshot.data!.data() as Map<String, dynamic>;
-
-              //     // تحويل البيانات باستخدام المودل
-              //     final order = OrderModel.fromMap(data, snapshot.data!.id);
-
-              //     // بما أنه مستند واحد (طلب واحد أو قائمة واحدة)، سنعرضها مباشرة
-              //     // أو نضعها في ListView إذا كنت تريد الاحتفاظ بنفس التنسيق
-              //     return ListView(
-              //       children: [
-              //         OrderCard(order: order),
-              //       ],
-              //     );
-              //   },
-              // builder: (context, snapshot) {
-              //   if (snapshot.connectionState == ConnectionState.waiting) {
-              //     return const Center(child: CircularProgressIndicator());
-              //   }
-              //   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              //     return const Center(child: Text("لا توجد طلبات حالياً"));
-              //   }
-
-              //   final docs = snapshot.data!.docs;
-
-              //   return ListView.builder(
-              //     itemCount: docs.length,
-              //     itemBuilder: (context, index) {
-              //       final order = OrderModel.fromMap(
-              //         docs[index].data() as Map<String, dynamic>,
-              //         docs[index].id,
-              //       );
-              //       return OrderCard(order: order);
-              //     },
-              //   );
-              // },
-              // ),
             ),
           ],
         ),

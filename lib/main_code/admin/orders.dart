@@ -29,14 +29,14 @@ class _OrdersState extends State<Orders> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: color.onPrimary,
+                  color: color.primary,
                 ),
               ),
               Text(
                 widget.subTitle,
                 style: TextStyle(
                   fontSize: 14,
-                  color: color.onPrimary.withOpacity(0.5),
+                  color: color.primary.withOpacity(0.5),
                 ),
               ),
             ],

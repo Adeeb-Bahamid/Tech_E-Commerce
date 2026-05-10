@@ -183,7 +183,11 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         // --- >>>>>>>>>>>>>>>> (Logo) <<<<<<<<<<<<<<< ---
                         Center(
-                          child: Image.asset('assets/images/tech_store.png'),
+                          child: Image.asset(
+                            'assets/images/tech.png',
+                            width: 100,
+                            height: 80,
+                          ),
                         ),
                         const SizedBox(height: 24),
 

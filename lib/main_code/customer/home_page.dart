@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:tech_e_commerce/main_code/shared/services/images_services.dart';
 
 import '../shared/services/firebase_helper.dart';
 
@@ -16,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   String searchQuery = "";
   final List<String> _filters = ['All', 'Phones', 'Laptops', 'Tablets'];
   final FirebaseHelper _firebaseHelper = FirebaseHelper();
+  final String user = FirebaseAuth.instance.currentUser!.displayName!;
   @override
   Widget build(BuildContext context) {
     ColorScheme color = Theme.of(context).colorScheme;
@@ -28,27 +31,18 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/images/tech_store.png',
-                  width: 60,
-                  height: 60,
-                ),
-                const Expanded(
+                Expanded(
                   child: Column(
                     children: [
                       ListTile(
-                        title: Text('Hello, User',
-                            style: TextStyle(
+                        title: Text('Hello, $user',
+                            style: const TextStyle(
                                 fontSize: 24, fontWeight: FontWeight.bold)),
-                        subtitle: Text('Find your favorite products'),
+                        subtitle: const Text('Find your favorite products'),
                       ),
                     ],
                   ),
                 ),
-                // IconButton(
-                //     onPressed: () {},
-                //     icon: const CircleAvatar(
-                //         child: Icon(Icons.notifications)))
               ],
             ),
           ),
@@ -62,25 +56,10 @@ class _HomePageState extends State<HomePage> {
             },
             decoration: InputDecoration(
               prefixIcon:
-                  Icon(Icons.search, color: color.onPrimary.withOpacity(0.5)),
+                  Icon(Icons.search, color: color.onSecondary.withOpacity(0.5)),
               hintText: 'Search products...',
               filled: true,
               fillColor: color.surface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(
-                  color: color.primary,
-                  width: 1.5,
-                ),
-              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -108,7 +87,7 @@ class _HomePageState extends State<HomePage> {
                   labelStyle: TextStyle(
                     color: _selectedFilterIndex == index
                         ? color.onPrimary
-                        : color.onPrimary.withOpacity(0.5),
+                        : color.onSecondary.withOpacity(0.5),
                   ),
                 ),
               ),
@@ -141,7 +120,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    childAspectRatio: 0.7,
+                    childAspectRatio: 0.5,
                   ),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
@@ -151,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                       productId: docs[index].id,
                       name: data['name'] ?? 'No Name',
                       price: '${data['price']}',
-                      imageUrl: '${data['imageUrl']}',
+                      publicId: '${data['imageId']}',
                     );
                   },
                 );
@@ -168,92 +147,109 @@ class _HomePageState extends State<HomePage> {
 class ProductCard extends StatelessWidget {
   final String name, price;
   final String productId;
-  final String? imageUrl;
+  final String? publicId;
   ProductCard({
     super.key,
     required this.productId,
     required this.name,
     required this.price,
-    required this.imageUrl,
+    required this.publicId,
   });
   final FirebaseHelper _firebaseHelper = FirebaseHelper();
+  final ImagesServices _imagesServices = ImagesServices();
   final int quantity = 0;
 
   @override
   Widget build(BuildContext context) {
     ColorScheme color = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(10),
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: color.surface,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
         children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                color: color.onSecondary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: imageUrl != null
-                  ? Image.network(imageUrl!, fit: BoxFit.fill)
-                  : const Icon(Icons.image, size: 50),
+          Container(
+            width: double.infinity,
+            height: 220,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              color: color.primary.withOpacity(0.1),
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10), topRight: Radius.circular(10)),
             ),
+            child: publicId != null
+                ? Image.network(
+                    _imagesServices.image(publicId!),
+                    fit: BoxFit.fill,
+                  )
+                : const Icon(Icons.image, size: 50),
           ),
-          const SizedBox(height: 10),
-          Text(name,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Text(price,
-                  style: TextStyle(
-                      color: color.secondary, fontWeight: FontWeight.bold)),
-              const Spacer(),
-              Container(
-                width: 30,
-                height: 30,
-                // padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: color.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  padding: const EdgeInsets.all(0),
-                  constraints: const BoxConstraints(maxHeight: 5, maxWidth: 5),
-                  onPressed: () async {
-                    final userId = FirebaseAuth.instance.currentUser!.uid;
-                    await _firebaseHelper.addToCart(
-                      userId: userId,
-                      productId: productId,
-                      name: name,
-                      imageUrl: imageUrl,
-                      price: double.parse(price),
-                    );
-
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Add To Cart'),
-                          backgroundColor: color.secondary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.all(10),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                children: [
+                  Text(name,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text('\$$price',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: color.secondary,
+                              fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: color.primary,
+                          shape: BoxShape.circle,
                         ),
-                      );
-                    }
-                  },
-                  icon: Icon(Icons.shopping_cart_checkout,
-                      color: color.onSecondary.withOpacity(0.5), size: 16),
-                ),
-              )
-            ],
+                        child: IconButton(
+                          padding: const EdgeInsets.all(0),
+                          constraints:
+                              const BoxConstraints(maxHeight: 8, maxWidth: 8),
+                          onPressed: () async {
+                            final userId =
+                                FirebaseAuth.instance.currentUser!.uid;
+                            await _firebaseHelper.addToCart(
+                              userId: userId,
+                              productId: productId,
+                              name: name,
+                              publicId: publicId,
+                              price: double.parse(price),
+                            );
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Add To Cart'),
+                                  backgroundColor: color.secondary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.all(10),
+                                ),
+                              );
+                            }
+                          },
+                          icon: Icon(Icons.shopping_cart_checkout,
+                              color: color.onPrimary, size: 20),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

@@ -30,63 +30,93 @@ class _HomeScreenAdminState extends State<HomeScreenAdmin> {
   Widget build(BuildContext context) {
     ColorScheme color = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      // backgroundColor: Colors.transparent,
       body: Row(
         children: [
           // >>>>>>>>>>>>>>>>(Sidebar)<<<<<<<<<<<<<<<<<<<<<<<<
           Container(
             width: 250,
-            color: color.surface,
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(10.0),
+            color: color.primary.withOpacity(0.3),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // >>>>>>>>>>>>>>>>Header Admin<<<<<<<<<<<<<<
-                Row(
-                  children: [
-                    Image.asset(
-                      'assets/images/tech_store.png',
-                      width: 50,
-                      height: 50,
-                    ),
-                    const SizedBox(width: 15),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Admin Panel',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: color.onPrimary),
-                        ),
-                        Text(
-                          'Tech Store',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: color.onPrimary.withOpacity(0.5),
+                Container(
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    color: color.onPrimary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/images/tech.png',
+                        width: 50,
+                        height: 50,
+                      ),
+                      const SizedBox(width: 15),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Admin Panel',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: color.onSecondary),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+
+                          Row(
+                            children: [
+                              Text(
+                                'Tech',
+                                style: TextStyle(
+                                    color: color.primary, fontSize: 26),
+                              ),
+                              Text(
+                                'Store',
+                                style: TextStyle(
+                                    color: color.secondary.withOpacity(0.6),
+                                    fontSize: 20),
+                              ),
+                            ],
+                          ),
+                          // Text(
+                          //   'Tech Store',
+                          //   style: TextStyle(
+                          //     fontSize: 12,
+                          //     color: color.onSecondary.withOpacity(0.5),
+                          //   ),
+                          // ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 50),
 
                 // >>>>>>>>>>>>>>>>>>>>>MenuItem<<<<<<<<<<<<<<<
-                _buildMenuItem(context, Icons.grid_view_rounded, 'Dashboard',
-                    index: 0),
-                const SizedBox(height: 10),
-                _buildMenuItem(context, Icons.shopping_bag_rounded, 'Products',
-                    index: 1),
-                const SizedBox(height: 10),
-                _buildMenuItem(context, Icons.shopping_cart_rounded, 'Orders',
-                    index: 2),
-
-                const Spacer(),
-
-                _buildMenuItem(context, Icons.logout_rounded, 'Logout',
-                    isSelected: false),
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildMenuItem(
+                          context, Icons.grid_view_rounded, 'Dashboard',
+                          index: 0),
+                      const SizedBox(height: 10),
+                      _buildMenuItem(
+                          context, Icons.shopping_bag_rounded, 'Products',
+                          index: 1),
+                      const SizedBox(height: 10),
+                      _buildMenuItem(
+                          context, Icons.shopping_cart_rounded, 'Orders',
+                          index: 2),
+                      const Spacer(),
+                      _buildMenuItem(context, Icons.logout_rounded, 'Logout',
+                          isSelected: false),
+                    ],
+                  ),
+                )
               ],
             ),
           ),
@@ -115,7 +145,7 @@ class _HomeScreenAdminState extends State<HomeScreenAdmin> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: effectiveIsSelected
-              ? color.primary.withOpacity(0.3)
+              ? color.secondary.withOpacity(0.5)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
@@ -124,14 +154,14 @@ class _HomeScreenAdminState extends State<HomeScreenAdmin> {
             Icon(icon,
                 color: effectiveIsSelected
                     ? color.primary
-                    : color.onPrimary.withOpacity(0.5),
+                    : color.onSecondary.withOpacity(0.8),
                 size: 20),
             const SizedBox(width: 15),
             Text(title,
                 style: TextStyle(
                     color: effectiveIsSelected
-                        ? color.onPrimary
-                        : color.onPrimary.withOpacity(0.5),
+                        ? color.onSecondary
+                        : color.onSecondary.withOpacity(0.8),
                     fontWeight: effectiveIsSelected
                         ? FontWeight.w600
                         : FontWeight.normal)),

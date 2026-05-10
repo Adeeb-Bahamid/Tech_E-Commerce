@@ -22,7 +22,29 @@ class _HomeScreenState extends State<HomeScreenCustomer> {
 
   @override
   Widget build(BuildContext context) {
+    ColorScheme color = Theme.of(context).colorScheme;
     return Scaffold(
+      appBar: AppBar(
+          title: Row(
+        children: [
+          const SizedBox(width: 20),
+          Image.asset(
+            'assets/images/tech.png',
+            width: 60,
+            height: 50,
+          ),
+          const SizedBox(width: 15),
+          Text(
+            'Tech',
+            style: TextStyle(color: color.primary, fontSize: 26),
+          ),
+          Text(
+            'Store',
+            style: TextStyle(
+                color: color.secondary.withOpacity(0.6), fontSize: 20),
+          ),
+        ],
+      )),
       body: SafeArea(
         child: _pages[_selectedIndex],
       ),
@@ -31,10 +53,9 @@ class _HomeScreenState extends State<HomeScreenCustomer> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
-        selectedItemColor: const Color(0xFF673AB7),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: color.primary,
+        unselectedItemColor: color.onSecondary.withOpacity(0.3),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF131313),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'HOME'),
           BottomNavigationBarItem(
